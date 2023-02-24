@@ -4,44 +4,8 @@ import {
 	Server,
 	ServerCredentials,
 	ServerUnaryCall,
+	status,
 } from "@grpc/grpc-js";
-import { Status } from "@grpc/grpc-js/build/src/constants";
-
-// create unary call
-
-const getMovieByTitle = (
-	call: ServerUnaryCall<GetMovieByTitleRequest, GetMovieByTitleResponse>,
-	callback: sendUnaryData<GetMovieByTitleResponse>
-) => {
-	console.log(call.request);
-	const movie = {
-		title: "The Godfather",
-		year: 1972,
-	};
-
-	if (call.request.title !== "dd") {
-		// add metadata and error
-
-		const metadata = new Metadata();
-		metadata.add("error", "movie not found");
-		callback(
-			{
-				code: Status.NOT_FOUND,
-				details: "movie not found",
-				metadata,
-			},
-			null,
-			metadata
-		);
-	}
-
-	const movieObj = Movie.create(movie);
-
-	const response = GetMovieByTitleResponse.create({
-		movie: movieObj,
-	});
-	callback(null, response);
-};
 
 import {
 	GetMovieByTitleRequest,
@@ -51,21 +15,57 @@ import {
 	moviesServiceDefinition,
 } from "@jtoloui/proto-store";
 
+// create unary call
+
+const getMovieByTitle = (
+	call: ServerUnaryCall<GetMovieByTitleRequest, GetMovieByTitleResponse>,
+	callback: sendUnaryData<GetMovieByTitleResponse>
+) => {
+	console.log("hello");
+
+	console.log(call.request);
+
+	if (call.request.title.length === 0) {
+		const metadata = new Metadata();
+		metadata.add("error", "invalid title");
+		callback(
+			{
+				code: status.INVALID_ARGUMENT,
+				details: "invalid title",
+				metadata,
+			},
+			null,
+			metadata
+		);
+	}
+
+	const movieObj = Movie.create({
+		title: call.request.title,
+		year: 1972,
+	});
+
+	const response = GetMovieByTitleResponse.create({
+		movie: movieObj,
+	});
+	callback(null, response);
+};
+
 const server = new Server();
 
-const svr: IMoviesService = {
+const service: IMoviesService = {
 	getMovieByTitle,
 };
 
-server.addService(moviesServiceDefinition, svr);
+server.addService(moviesServiceDefinition, service);
 server.bindAsync(
 	"0.0.0.0:50051",
 	ServerCredentials.createInsecure(),
-	(err, port) => {
+	(err: Error | null, port: number) => {
 		if (err) {
-			throw err;
+			console.error(`Server error: ${err.message}`);
+		} else {
+			console.log(`Server bound on port: ${port}`);
+			server.start();
 		}
-		server.start();
-		console.log(`Server running on port ${port}`);
 	}
 );
