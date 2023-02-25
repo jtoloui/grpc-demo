@@ -4,8 +4,8 @@ import {
 } from "@jtoloui/proto-store";
 import { Request, Response } from "express";
 import { Metadata } from "@grpc/grpc-js";
-import { IncomingHttpHeaders } from "http";
 import { ParamsDictionary } from "express-serve-static-core";
+import { logger as log } from "../middleware";
 
 interface paramsDictionary extends ParamsDictionary {
 	title: string;
@@ -14,6 +14,8 @@ interface paramsDictionary extends ParamsDictionary {
 type requestParams = {
 	title: string;
 };
+
+const logger = log("getMovieByTitle");
 
 export const getMovieByTitle = (client: MoviesServiceClient) => {
 	return (
@@ -40,13 +42,17 @@ export const getMovieByTitle = (client: MoviesServiceClient) => {
 		client.getMovieByTitle(message, metadata, (err, value) => {
 			if (err) {
 				if (err.code === 3) {
+					logger.error(err.message);
 					res.status(400).json({ error: err.message });
 				}
-
+				logger.error(err.message);
 				res.status(500).json({ error: err.message });
 			}
 
 			if (value) {
+				logger.info(`tracer response: ${tracerId}`, {
+					movie: value.movie,
+				});
 				res.status(200).json(value.movie);
 			}
 		});
