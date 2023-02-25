@@ -16,7 +16,7 @@ export const getMovieByTitle = (
 	callback: sendUnaryData<GetMovieByTitleResponse>
 ) => {
 	const logger = log("getMovieByTitle");
-	logger.info(`request received: ${call.request.title}`);
+	logger.info(`tracer call: ${call.metadata.get("X-Tracer-Id")[0]}`);
 
 	if (call.request.title.length === 0) {
 		const metadata = new Metadata();

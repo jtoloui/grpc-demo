@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import dotenv from "dotenv";
 
 import { getMovieByTitle } from "./controllers";
-import { winstonLogger } from "./middleware";
+import { setTracerdHeader, winstonLogger } from "./middleware";
 import { client as grpcClient } from "./grpcClient";
 
 dotenv.config();
@@ -11,7 +11,9 @@ const client = grpcClient;
 
 const app: Express = express();
 
+app.use(setTracerdHeader);
 app.use(winstonLogger);
+app.use(express.json());
 
 app.get("/", getMovieByTitle(client));
 
