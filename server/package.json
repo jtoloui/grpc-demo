@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "ts-node index.ts"
+    "start:dev": "nodemon index.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.8.10",
-    "@jtoloui/proto-store": "^1.0.2"
+    "@jtoloui/proto-store": "^1.0.2",
+    "winston": "^3.8.2"
   }
 }

@@ -1,73 +1,27 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import dotenv from "dotenv";
-import { ChannelCredentials } from "@grpc/grpc-js";
-import {
-	MoviesServiceClient,
-	IMoviesServiceClient,
-	GetMovieByTitleRequest,
-	GetMovieByTitleResponse,
-} from "@jtoloui/proto-store";
-import axios from "axios";
+
+import { getMovieByTitle } from "./controllers";
+import { winstonLogger } from "./middleware";
+import { client as grpcClient } from "./grpcClient";
 
 dotenv.config();
 
-const client = new MoviesServiceClient(
-	"0.0.0.0:50051",
-	ChannelCredentials.createInsecure(),
-	{},
-	{}
-);
-
-const deadline = new Date();
-deadline.setSeconds(deadline.getSeconds() + 5);
-client.waitForReady(deadline, (err) => {
-	if (err) {
-		console.log("error: ", err);
-	}
-
-	console.log("client is ready");
-});
+const client = grpcClient;
 
 const app: Express = express();
 
-type requestParams = {
-	title: string;
-};
-app.get("/", (req: Request<requestParams>, res: Response) => {
-	const { title } = req.query;
+app.use(winstonLogger);
 
-	if (!title) {
-		res.status(400).json({ error: "invalid title" });
-	}
+app.get("/", getMovieByTitle(client));
 
-	const reqTitle = title as string;
+// app.get("/test", (req: Request<requestParams>, res: Response) => {
+// 	const { title } = req.query;
 
-	const message = GetMovieByTitleRequest.create({
-		title: reqTitle,
-	});
-
-	client.getMovieByTitle(message, (err, value) => {
-		if (err) {
-			if (err.code === 3) {
-				res.status(400).json({ error: err.message });
-			}
-
-			res.status(500).json({ error: err.message });
-		}
-
-		if (value) {
-			res.status(200).json(value.movie);
-		}
-	});
-});
-
-app.get("/test", (req: Request<requestParams>, res: Response) => {
-	const { title } = req.query;
-
-	fetch(`http://localhost:3000/?title=${title}`)
-		.then((response) => response.json())
-		.then((data) => res.json(data));
-});
+// 	fetch(`http://localhost:3000/?title=${title}`)
+// 		.then((response) => response.json())
+// 		.then((data) => res.json(data));
+// });
 
 app.listen(8080, () => {
 	console.log("Server running on port 8080");

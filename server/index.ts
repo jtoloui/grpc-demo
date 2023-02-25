@@ -1,54 +1,9 @@
-import {
-	Metadata,
-	sendUnaryData,
-	Server,
-	ServerCredentials,
-	ServerUnaryCall,
-	status,
-} from "@grpc/grpc-js";
+import { Server, ServerCredentials } from "@grpc/grpc-js";
 
-import {
-	GetMovieByTitleRequest,
-	GetMovieByTitleResponse,
-	IMoviesService,
-	Movie,
-	moviesServiceDefinition,
-} from "@jtoloui/proto-store";
+import { IMoviesService, moviesServiceDefinition } from "@jtoloui/proto-store";
 
-// create unary call
-
-const getMovieByTitle = (
-	call: ServerUnaryCall<GetMovieByTitleRequest, GetMovieByTitleResponse>,
-	callback: sendUnaryData<GetMovieByTitleResponse>
-) => {
-	console.log("hello");
-
-	console.log(call.request);
-
-	if (call.request.title.length === 0) {
-		const metadata = new Metadata();
-		metadata.add("error", "invalid title");
-		callback(
-			{
-				code: status.INVALID_ARGUMENT,
-				details: "invalid title",
-				metadata,
-			},
-			null,
-			metadata
-		);
-	}
-
-	const movieObj = Movie.create({
-		title: call.request.title,
-		year: 1972,
-	});
-
-	const response = GetMovieByTitleResponse.create({
-		movie: movieObj,
-	});
-	callback(null, response);
-};
+import { logger as log } from "./logger/logger";
+import { getMovieByTitle } from "./grpc/services";
 
 const server = new Server();
 
@@ -58,13 +13,14 @@ const service: IMoviesService = {
 
 server.addService(moviesServiceDefinition, service);
 server.bindAsync(
-	"0.0.0.0:50051",
+	"localhost:50051",
 	ServerCredentials.createInsecure(),
 	(err: Error | null, port: number) => {
+		const logger = log("server");
 		if (err) {
-			console.error(`Server error: ${err.message}`);
+			logger.error(`startup error: ${err.message}`);
 		} else {
-			console.log(`Server bound on port: ${port}`);
+			logger.info(`started on 0.0.0.0:${port}`);
 			server.start();
 		}
 	}
