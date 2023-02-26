@@ -40,11 +40,11 @@ export const getMovieById = (client: MoviesServiceClient) => {
 			if (err) {
 				switch (err.code) {
 					case 3:
-						logger.error(err.message);
+						logger.warn(err.message);
 						res.status(400).json({ error: err.message });
 						break;
 					case 5:
-						logger.error(err.message);
+						logger.warn(err.message);
 						res.status(404).json({ error: err.details });
 						break;
 					default:

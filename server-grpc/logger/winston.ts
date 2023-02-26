@@ -1,5 +1,8 @@
 import winston, { createLogger, transports, format } from "winston";
 
+const myFormat = format.printf((info) => {
+	return `${info.timestamp} [${info.label}] ${info.level}: ${info.message} ${info.ms}`;
+});
 export const logger = (label: string) =>
 	createLogger({
 		transports: [
@@ -7,9 +10,11 @@ export const logger = (label: string) =>
 				level: "info",
 				format: format.combine(
 					format.label({ label }),
-					format.timestamp(),
+					format.colorize(),
+					format.timestamp({ format: "DD-MM-YYYY HH:mm:ss" }),
 					format.ms(),
-					format.json()
+					format.splat(),
+					format.simple()
 				),
 			}),
 		],

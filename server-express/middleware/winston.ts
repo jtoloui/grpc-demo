@@ -1,13 +1,14 @@
-import winston from "winston";
+import winston, { format } from "winston";
 import expressWinston from "express-winston";
 
 export const logger = (label: string) =>
 	winston.createLogger({
-		format: winston.format.combine(
-			winston.format.ms(),
-			winston.format.label({ label }),
-			winston.format.timestamp(),
-			winston.format((info) => {
+		format: format.combine(
+			format.ms(),
+			format.colorize(),
+			format.label({ label }),
+			format.timestamp({ format: "DD-MM-YYYY HH:mm:ss" }),
+			format((info) => {
 				const headers = info.meta?.req?.headers;
 				let tracer = null;
 				if (headers) {
@@ -19,7 +20,7 @@ export const logger = (label: string) =>
 					...(tracer && { "x-tracer-id": tracer }),
 				};
 			})(),
-			winston.format.json()
+			format.simple()
 		),
 		transports: [new winston.transports.Console()],
 	});
