@@ -31,6 +31,10 @@ const movieSchema = new Schema({
 	},
 });
 
+movieSchema.statics.build = (attr: IMovie) => {
+	return new Movie(attr);
+};
+
 const Movie = model<IMovieDoc, movieModelInterface>("Movie", movieSchema);
 
 export { Movie };

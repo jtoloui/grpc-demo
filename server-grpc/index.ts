@@ -1,15 +1,21 @@
 import { Server, ServerCredentials } from "@grpc/grpc-js";
-
+import dotenv from "dotenv";
 import { IMoviesService, moviesServiceDefinition } from "@jtoloui/proto-store";
 
 import { logger as log } from "./logger/logger";
-import { getMovieByTitle } from "./grpc/services";
+import { getMovieById, createMovie } from "./grpc/services";
+import { connectDB } from "./db";
+
+dotenv.config();
 
 const server = new Server();
 
 const service: IMoviesService = {
-	getMovieByTitle,
+	getMovieById,
+	createMovie,
 };
+
+connectDB();
 
 server.addService(moviesServiceDefinition, service);
 server.bindAsync(

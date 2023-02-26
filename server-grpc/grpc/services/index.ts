@@ -1,1 +1,2 @@
-export * from "./getMovieByTitle";
+export * from "./getMovieById";
+export * from "./createMovie";
