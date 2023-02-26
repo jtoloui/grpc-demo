@@ -1,15 +1,15 @@
-runServer:
-	@echo "Running server..."
-	cd server && npm run start:dev
-.PHONY: runServer
+# Define the generic rule for running servers
+run-%:
+	@echo "Running server $*..."
+	cd server-$* && npm run start:dev
 
-runClient:
-	@echo "Running client..."
-	cd client && npm run start:dev
-.PHONY: runClient
+# Define the targets that depend on the generic rule
+grpc: run-grpc
+express: run-express
 
-runAll: 
-	@echo "Running server and client..."
-	cd server && npm run start:dev &
-	cd client && npm run start:dev
-.PHONY: runAll
+run-all:
+	@echo "Running all servers..."
+	cd server-grpc && npm run start:dev &
+	cd server-express && npm run start:dev
+
+.PHONY: run-% grpc express run-all
