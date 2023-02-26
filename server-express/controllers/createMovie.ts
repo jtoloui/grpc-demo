@@ -1,6 +1,5 @@
 import { MoviesServiceClient } from "@jtoloui/proto-store";
 import { Request, Response } from "express";
-import { Movie } from "../models";
 
 type requestBody = {
 	title: string;
@@ -12,20 +11,8 @@ export const createMovie = async (
 	req: Request<{}, {}, requestBody>,
 	res: Response
 ) => {
-	const movie = Movie.build({
-		title: req.body.title,
-		year: req.body.year,
-		director: req.body.director,
-	});
-
-	await movie.save();
-
-	return res.status(200).json({
-		id: movie.id,
-		title: movie.title,
-		year: movie.year,
-		director: movie.director,
-	});
+	const { title, year, director } = req.body;
+	res.json({ title, year, director });
 
 	// const movie = Movie.create({
 	// 	title: req.body.title,
