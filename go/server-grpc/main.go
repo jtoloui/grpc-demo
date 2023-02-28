@@ -13,6 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Server struct {
@@ -35,6 +37,7 @@ func (s *Server) GetMovieById(ctx context.Context, req *moviesv1.GetMovieByIdReq
 
 	if err != nil {
 		logger.Errorw("Error decoding bytes", "error", err)
+		return nil, status.Error(codes.InvalidArgument, "Invalid ID")
 	}
 	filter := bson.D{primitive.E{Key: "_id", Value: primitive.ObjectID(id)}}
 
@@ -43,6 +46,7 @@ func (s *Server) GetMovieById(ctx context.Context, req *moviesv1.GetMovieByIdReq
 
 	if findErr != nil {
 		logger.Errorw("Error decoding bytes", "error", findErr)
+		return nil, status.Error(codes.NotFound, "Movie not found")
 	}
 
 	return &moviesv1.GetMovieByIdResponse{
@@ -69,6 +73,7 @@ func (s *Server) CreateMovie(ctx context.Context, req *moviesv1.CreateMovieReque
 
 	if err != nil {
 		logger.Errorw("Error inserting movie", "error", err)
+		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
 	return &moviesv1.CreateMovieResponse{
