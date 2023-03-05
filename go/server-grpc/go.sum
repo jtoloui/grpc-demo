@@ -12,10 +12,6 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
-github.com/jtoloui/proto-store/go v0.0.0-20230227205315-3d86bd429f51 h1:tTnTyWzPfzi5NaHYnTjx81SgnZt13Dmm1caqX4uTlss=
-github.com/jtoloui/proto-store/go v0.0.0-20230227205315-3d86bd429f51/go.mod h1:mNDjFsEHbNaWxO8DnXHHzOlBFgimgnA84SM7Uai6Kn0=
-github.com/jtoloui/proto-store/go v0.0.0-20230305204309-3791e7ce2555 h1:8IMyyG62dsJRDvqm3suJ9fE7FtrfNPTiOBryJQVTdrI=
-github.com/jtoloui/proto-store/go v0.0.0-20230305204309-3791e7ce2555/go.mod h1:mNDjFsEHbNaWxO8DnXHHzOlBFgimgnA84SM7Uai6Kn0=
 github.com/jtoloui/proto-store/go v0.0.0-20230305211919-56e634d52b09 h1:p7LM7Hm7fN2kDoAKQ3riSSto+ZNiJcxEp7sLfTykN8E=
 github.com/jtoloui/proto-store/go v0.0.0-20230305211919-56e634d52b09/go.mod h1:mNDjFsEHbNaWxO8DnXHHzOlBFgimgnA84SM7Uai6Kn0=
 github.com/klauspost/compress v1.13.6 h1:P76CopJELS0TiO2mebmnzgWaajssP/EszplttgQxcgc=
