@@ -9,7 +9,7 @@ This repo using [proto-store](https://github.com/jtoloui/proto-store) package in
 
 The servers all connect to a mongo db which you can connect your own by setting in an .env file at all entry levels within the go/js server folders.
 
-The model in the db collection used in the example can we see [here](./javascript/server-grpc/models/movie.ts) or below
+The model in the db collection used in the example can be seen [here](./javascript/server-grpc/models/movie.ts) or below
 
 ```ts
 const movieSchema = new Schema({
