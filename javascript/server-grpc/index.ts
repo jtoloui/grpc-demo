@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { IMoviesService, moviesServiceDefinition } from "@jtoloui/proto-store";
 
 import { logger as log } from "./logger/winston";
-import { getMovieById, createMovie } from "./grpc/services";
+import { getMovieById, createMovie, getMovies } from "./grpc/services";
 import { connectDB } from "./db";
 
 dotenv.config();
@@ -13,6 +13,7 @@ const server = new Server();
 const service: IMoviesService = {
 	getMovieById,
 	createMovie,
+	getMovies,
 };
 
 connectDB();

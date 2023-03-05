@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.8.10",
-    "@jtoloui/proto-store": "^1.0.7",
+    "@jtoloui/proto-store": "^1.0.10",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-winston": "^4.2.0",

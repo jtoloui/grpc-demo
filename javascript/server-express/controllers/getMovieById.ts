@@ -19,7 +19,8 @@ export const getMovieById = (client: MoviesServiceClient) => {
 		req: Request<paramsDictionary, {}, {}, requestParams>,
 		res: Response
 	) => {
-		const { id } = req.query;
+		const { id } = req.params;
+
 		let tracerId = req.get("x-tracer-id");
 
 		if (!tracerId) tracerId = "no-tracer-id";
@@ -55,10 +56,15 @@ export const getMovieById = (client: MoviesServiceClient) => {
 			}
 
 			if (value) {
+				const responseObj = {
+					title: value.movie?.title,
+					year: value.movie?.year,
+					director: value.movie?.director,
+				};
 				logger.info(`tracer response: ${tracerId}`, {
 					movie: value.movie,
 				});
-				res.status(200).json(value.movie);
+				res.status(200).json(responseObj);
 			}
 		});
 	};

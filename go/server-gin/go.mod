@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/gin-gonic/gin v1.9.0
-	github.com/jtoloui/proto-store/go v0.0.0-20230227205315-3d86bd429f51
+	github.com/jtoloui/proto-store/go v0.0.0-20230305211919-56e634d52b09
 	go.uber.org/zap v1.24.0
 )
 

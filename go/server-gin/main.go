@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	moviesv1 "github.com/jtoloui/proto-store/go/movies/v1"
@@ -11,16 +12,16 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func GetMovie(ctx context.Context, log zap.SugaredLogger, c *gin.Context, client moviesv1.MoviesServiceClient) {
+func GetMovieById(ctx context.Context, log zap.SugaredLogger, c *gin.Context, client moviesv1.MoviesServiceClient) {
 	logger := log.With("method", "GetMovie")
-	id := c.Query("id")
-	logger.Infow("title", "title", id)
+	id := c.Param("id")
 
 	if id == "" {
-		logger.Errorw("title is required")
-		c.JSON(400, gin.H{"error": "title is required"})
+		logger.Errorw("id is required")
+		c.JSON(400, gin.H{"error": "id is required"})
 		return
 	}
+	logger.Infow("id", "id", id)
 
 	moviesRequest := moviesv1.GetMovieByIdRequest{
 		Id: id,
@@ -35,17 +36,20 @@ func GetMovie(ctx context.Context, log zap.SugaredLogger, c *gin.Context, client
 		case codes.InvalidArgument:
 			logger.Errorw("invalid argument", "error", err)
 			c.JSON(400, gin.H{"error": "invalid argument"})
+			return
 		case codes.NotFound:
 			logger.Errorw("movie not found", "error", err)
 			c.JSON(404, gin.H{"error": "movie not found"})
+			return
 		default:
 			logger.Errorw("internal server error", "error", err)
 			c.JSON(500, gin.H{"error": "internal server error"})
+			return
 		}
-	} else {
-		logger.Infow("movie", "movie", movie.Movie)
-		c.JSON(200, gin.H{"movie": movie.Movie})
 	}
+	logger.Infow("movie", "movie", movie.Movie)
+	c.JSON(200, gin.H{"movie": movie.Movie})
+	return
 
 }
 
@@ -103,14 +107,70 @@ func CreateMovie(ctx context.Context, log zap.SugaredLogger, c *gin.Context, cli
 		case codes.InvalidArgument:
 			logger.Errorw("invalid argument", "error", err)
 			c.JSON(400, gin.H{"error": "invalid argument"})
+			return
 		default:
 			logger.Errorw("internal server error", "error", err)
 			c.JSON(500, gin.H{"error": "internal server error"})
+			return
 		}
-	} else {
-		logger.Infow("movie", "movie", movie.Movie)
-		c.JSON(200, gin.H{"movie": movie.Movie, "id": movie.Id})
 	}
+	logger.Infow("movie", "movie", movie.Movie)
+	c.JSON(200, gin.H{"movie": movie.Movie, "id": movie.Id})
+
+}
+
+func GetMovies(ctx context.Context, log zap.SugaredLogger, c *gin.Context, client moviesv1.MoviesServiceClient) {
+	logger := log.With("method", "GetMovies")
+
+	pageQuery := c.DefaultQuery("page", "1")
+	perPageQuery := c.DefaultQuery("per_page", "10")
+
+	page, err := strconv.Atoi(pageQuery)
+	if err != nil {
+		logger.Errorw("invalid page", "error", err)
+		c.JSON(400, gin.H{"error": "invalid page"})
+		return
+	}
+
+	perPage, err := strconv.Atoi(perPageQuery)
+	if err != nil {
+		logger.Errorw("invalid per_page", "error", err)
+		c.JSON(400, gin.H{"error": "invalid per_page"})
+		return
+	}
+
+	logger.Info("GetMovies", "page", page, "per_page", perPage)
+
+	moviesRequest := moviesv1.GetMoviesRequest{
+		Page:    int32(page),
+		PerPage: int32(perPage),
+	}
+
+	movies, err := client.GetMovies(ctx, &moviesRequest)
+
+	c.Writer.Header().Add("Content-Type", "application/json")
+
+	if err != nil {
+		errCode := status.Code(err)
+
+		switch errCode {
+		case codes.InvalidArgument:
+			logger.Errorw("invalid argument", "error", err)
+			c.JSON(400, gin.H{"error": "invalid argument"})
+			return
+		default:
+			logger.Errorw("internal server error", "error", err)
+			c.JSON(500, gin.H{"error": "internal server error"})
+			return
+		}
+	}
+
+	movieList := make([]moviesv1.Movie, 0, perPage)
+
+	for _, movie := range movies.Movies {
+		movieList = append(movieList, *movie)
+	}
+	c.JSON(200, gin.H{"movies": movieList, "total": movies.Total})
 
 }
 
@@ -150,7 +210,11 @@ func run(ctx context.Context, log zap.SugaredLogger) error {
 	router := gin.Default()
 
 	router.GET("/", func(ctx *gin.Context) {
-		GetMovie(ctx, log, ctx, moviesClient)
+		GetMovies(ctx, log, ctx, moviesClient)
+	})
+
+	router.GET("/:id", func(ctx *gin.Context) {
+		GetMovieById(ctx, log, ctx, moviesClient)
 	})
 
 	router.POST("/", func(ctx *gin.Context) {

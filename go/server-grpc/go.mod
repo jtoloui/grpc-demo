@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/jtoloui/proto-store/go v0.0.0-20230227205315-3d86bd429f51
+	github.com/jtoloui/proto-store/go v0.0.0-20230305211919-56e634d52b09
 	go.mongodb.org/mongo-driver v1.11.2
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.53.0

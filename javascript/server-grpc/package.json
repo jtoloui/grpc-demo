@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.8.10",
-    "@jtoloui/proto-store": "^1.0.7",
+    "@jtoloui/proto-store": "^1.0.10",
     "dotenv": "^16.0.3",
     "mongoose": "^6.10.0",
     "winston": "^3.8.2"
