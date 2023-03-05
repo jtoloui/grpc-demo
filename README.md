@@ -53,21 +53,21 @@ From the root director you can run the commands inside of the [Makefile](./Makef
 ### Javascript
 e.g running javascript client and service
 
-```bash
+```console
 make js-server
 ```
 
-```bash
+```console
 make js-client
 ```
 
 ### Go
 e.g running go client and service
 
-```bash
+```console
 make go-run-grpc
 ```
 
-```bash
+```console
 make go-run-gin
 ```
