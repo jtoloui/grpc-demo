@@ -17,9 +17,9 @@ app.use(setTracerdHeader);
 app.use(winstonLogger);
 app.use(express.json());
 
+app.get("/:id", getMovieById(client));
 app.get("/", getMovies(client));
 app.post("/", createMovie(client));
-app.get("/:id", getMovieById(client));
 
 // app.get("/test", (req: Request<requestParams>, res: Response) => {
 // 	const { title } = req.query;

@@ -92,14 +92,30 @@ func (s *Service) GetMovies(ctx context.Context, req *moviesv1.GetMoviesRequest)
 func (s *Service) GetMovieById(ctx context.Context, req *moviesv1.GetMovieByIdRequest) (*moviesv1.GetMovieByIdResponse, error) {
 	logger := s.log.With("method", "GetMovieById")
 
-	logger.Infow("GetMovieById", "id", req.Id)
-	id, err := primitive.ObjectIDFromHex(req.Id)
+	if req.Id == "" {
+		logger.Errorw("Error decoding bytes", "error", "id is empty")
+		return nil, status.Error(codes.InvalidArgument, "Invalid ID")
+	}
 
-	if err != nil {
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	var tracerId string
+	if !ok {
+		tracerId = "no-tracer-id"
+	} else {
+		tracerId = md.Get("x-tracer-id")[0]
+	}
+
+	var id primitive.ObjectID
+
+	if err := id.UnmarshalText([]byte(req.Id)); err != nil {
 		logger.Errorw("Error decoding bytes", "error", err)
 		return nil, status.Error(codes.InvalidArgument, "Invalid ID")
 	}
-	filter := bson.D{primitive.E{Key: "_id", Value: primitive.ObjectID(id)}}
+
+	logger.Infow("inbound request", "x-tracer-id", tracerId, "id", id.Hex())
+
+	filter := bson.D{primitive.E{Key: "_id", Value: id}}
 
 	var movie Movie
 	findErr := s.db.FindOne(ctx, filter).Decode(&movie)
@@ -122,7 +138,16 @@ func (s *Service) GetMovieById(ctx context.Context, req *moviesv1.GetMovieByIdRe
 func (s *Service) CreateMovie(ctx context.Context, req *moviesv1.CreateMovieRequest) (*moviesv1.CreateMovieResponse, error) {
 	logger := s.log.With("method", "CreateMovie")
 
-	logger.Infow("Creating movie", "movie", req.Movie)
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	var tracerId string
+	if !ok {
+		tracerId = "no-tracer-id"
+	} else {
+		tracerId = md.Get("x-tracer-id")[0]
+	}
+
+	logger.Infow("Creating movie", "movie", req.Movie, "x-tracer-id", tracerId)
 
 	movie := Movie{
 		Title:    req.Movie.Title,

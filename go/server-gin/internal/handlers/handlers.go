@@ -37,16 +37,16 @@ func (c *Config) GetMovies(gc *gin.Context) {
 		logger.Errorw("tracer id not found")
 		tracerId = "unknown"
 	}
-	logger.Infow("GetMovies", "page", page, "per_page", perPage, "trace_id", tracerId)
+	md := metadata.Pairs("X-Tracer-Id", tracerId.(string))
+
+	ctx := metadata.NewOutgoingContext(c.Ctx, md)
+
+	logger.Infow("GetMovies", "page", page, "per_page", perPage, "x-tracer-id", tracerId)
 
 	moviesRequest := moviesv1.GetMoviesRequest{
 		Page:    int32(page),
 		PerPage: int32(perPage),
 	}
-
-	md := metadata.Pairs("X-Tracer-Id", tracerId.(string))
-
-	ctx := metadata.NewOutgoingContext(c.Ctx, md)
 
 	movies, err := c.Client.GetMovies(ctx, &moviesRequest, grpc.Header(&md))
 
@@ -112,6 +112,15 @@ func (c *Config) CreateMovie(gc *gin.Context) {
 		return
 	}
 
+	tracerId, ok := gc.Get("X-Tracer-Id")
+	if !ok {
+		logger.Errorw("tracer id not found")
+		tracerId = "unknown"
+	}
+	md := metadata.Pairs("X-Tracer-Id", tracerId.(string))
+
+	ctx := metadata.NewOutgoingContext(c.Ctx, md)
+
 	moviesRequest := moviesv1.CreateMovieRequest{
 		Movie: &moviesv1.Movie{
 			Title:    body.Title,
@@ -120,7 +129,7 @@ func (c *Config) CreateMovie(gc *gin.Context) {
 		},
 	}
 
-	movie, err := c.Client.CreateMovie(c.Ctx, &moviesRequest)
+	movie, err := c.Client.CreateMovie(ctx, &moviesRequest)
 
 	gc.Writer.Header().Add("Content-Type", "application/json")
 
@@ -138,7 +147,7 @@ func (c *Config) CreateMovie(gc *gin.Context) {
 			return
 		}
 	}
-	logger.Infow("movie", "movie", movie.Movie)
+	logger.Infow("CreateMovie", "movie", movie.Movie, "id", movie.Id, "x-tracer-id", tracerId)
 	gc.JSON(200, gin.H{"movie": movie.Movie, "id": movie.Id})
 
 }
@@ -153,13 +162,22 @@ func (c *Config) GetMovieById(gc *gin.Context) {
 		gc.JSON(400, gin.H{"error": "id is required"})
 		return
 	}
-	logger.Infow("id", "id", id)
+	tracerId, ok := gc.Get("X-Tracer-Id")
+	if !ok {
+		logger.Errorw("tracer id not found")
+		tracerId = "unknown"
+	}
+	md := metadata.Pairs("X-Tracer-Id", tracerId.(string))
+
+	ctx := metadata.NewOutgoingContext(c.Ctx, md)
+
+	logger.Infow("GetMovieById", "id", id, "x-tracer-id", tracerId)
 
 	moviesRequest := moviesv1.GetMovieByIdRequest{
 		Id: id,
 	}
 
-	movie, err := c.Client.GetMovieById(c.Ctx, &moviesRequest)
+	movie, err := c.Client.GetMovieById(ctx, &moviesRequest)
 	gc.Writer.Header().Add("Content-Type", "application/json")
 	if err != nil {
 		errCode := status.Code(err)
@@ -179,6 +197,5 @@ func (c *Config) GetMovieById(gc *gin.Context) {
 			return
 		}
 	}
-	logger.Infow("movie", "movie", movie.Movie)
 	gc.JSON(200, gin.H{"movie": movie.Movie})
 }

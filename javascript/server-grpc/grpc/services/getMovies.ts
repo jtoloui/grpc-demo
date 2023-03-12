@@ -24,7 +24,6 @@ export const getMovies = (
 	Promise.all([movies, totalRes])
 		.then((res) => {
 			const [movies, total] = res;
-			logger.info("first item", movies[0]);
 			const response = GetMoviesResponse.create({
 				movies: movies.map((movie) => ({
 					title: movie.title,
