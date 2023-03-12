@@ -5,7 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	moviesv1 "github.com/jtoloui/proto-store/go/movies/v1"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -30,14 +32,23 @@ func (c *Config) GetMovies(gc *gin.Context) {
 		return
 	}
 
-	logger.Info("GetMovies", "page", page, "per_page", perPage)
+	tracerId, ok := gc.Get("X-Tracer-Id")
+	if !ok {
+		logger.Errorw("tracer id not found")
+		tracerId = "unknown"
+	}
+	logger.Infow("GetMovies", "page", page, "per_page", perPage, "trace_id", tracerId)
 
 	moviesRequest := moviesv1.GetMoviesRequest{
 		Page:    int32(page),
 		PerPage: int32(perPage),
 	}
 
-	movies, err := c.Client.GetMovies(c.Ctx, &moviesRequest)
+	md := metadata.Pairs("X-Tracer-Id", tracerId.(string))
+
+	ctx := metadata.NewOutgoingContext(c.Ctx, md)
+
+	movies, err := c.Client.GetMovies(ctx, &moviesRequest, grpc.Header(&md))
 
 	gc.Writer.Header().Add("Content-Type", "application/json")
 

@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -34,9 +35,18 @@ func NewService(db *mongo.Collection, log *zap.SugaredLogger) *Service {
 }
 
 func (s *Service) GetMovies(ctx context.Context, req *moviesv1.GetMoviesRequest) (*moviesv1.GetMoviesResponse, error) {
-	logger := s.log.With("method", "GetMovies")
 
-	logger.Infow("GetMovies")
+	logger := s.log.With("method", "GetMovies")
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	var tracerId string
+	if !ok {
+		tracerId = "no-tracer-id"
+	} else {
+		tracerId = md.Get("x-tracer-id")[0]
+	}
+	logger.Infow("inbound request", "x-tracer-id", tracerId)
+
 	page := int64(req.Page)
 	perPage := int64(req.PerPage)
 

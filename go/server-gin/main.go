@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jtoloui/grpc-demo/go/server-gin/internal/handlers"
 	moviesv1 "github.com/jtoloui/proto-store/go/movies/v1"
 	"go.uber.org/zap"
@@ -28,6 +29,25 @@ func main() {
 
 }
 
+type ServerHeader struct {
+	gin.ResponseWriter
+	TracerId string
+}
+
+func (w *ServerHeader) Write(b []byte) (int, error) {
+	w.Header().Set("X-Tracer-Id", w.TracerId)
+	return w.ResponseWriter.Write(b)
+}
+
+func TracerMiddleware(c *gin.Context) {
+	uuid := uuid.New()
+	// before request
+	c.Writer = &ServerHeader{c.Writer, uuid.String()}
+	c.Set("X-Tracer-Id", uuid.String())
+	c.Next()
+	// after request
+}
+
 func run(ctx context.Context, log zap.SugaredLogger) error {
 	logger := log.With("method", "run")
 	defer logger.Sync()
@@ -47,12 +67,11 @@ func run(ctx context.Context, log zap.SugaredLogger) error {
 	router := gin.Default()
 
 	handlers := handlers.NewConfig(&log, ctx, moviesClient)
+	router.Use(TracerMiddleware)
 
 	router.GET("/", handlers.GetMovies)
-
-	router.GET("/:id", handlers.GetMovieById)
-
 	router.POST("/", handlers.CreateMovie)
+	router.GET("/:id", handlers.GetMovieById)
 
 	defer func() {
 		err := router.Run(":8080")
