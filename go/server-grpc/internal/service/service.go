@@ -106,9 +106,9 @@ func (s *Service) GetMovieById(ctx context.Context, req *moviesv1.GetMovieByIdRe
 		tracerId = md.Get("x-tracer-id")[0]
 	}
 
-	var id primitive.ObjectID
+	id, err := primitive.ObjectIDFromHex(string(req.Id))
 
-	if err := id.UnmarshalText([]byte(req.Id)); err != nil {
+	if err != nil {
 		logger.Errorw("Error decoding bytes", "error", err)
 		return nil, status.Error(codes.InvalidArgument, "Invalid ID")
 	}
