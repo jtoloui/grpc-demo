@@ -121,7 +121,7 @@ func (s *Service) GetMovieById(ctx context.Context, req *moviesv1.GetMovieByIdRe
 	findErr := s.db.FindOne(ctx, filter).Decode(&movie)
 
 	if findErr != nil {
-		logger.Errorw("Error decoding bytes", "error", findErr)
+		logger.Errorw("Movie not found", "error", findErr)
 		return nil, status.Error(codes.NotFound, "Movie not found")
 	}
 
